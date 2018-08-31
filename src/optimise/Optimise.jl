@@ -1,7 +1,7 @@
 module Optimise
 
 export train!,
-	SGD, Descent, ADAM, AdaMax, Momentum, Nesterov, RMSProp, ADAGrad, ADADelta, AMSGrad
+  Descent, ADAM, Momentum, Nesterov, RMSProp, update!
 
 include("optimisers.jl")
 include("train.jl")
