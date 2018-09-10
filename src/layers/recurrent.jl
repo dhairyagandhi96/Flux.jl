@@ -1,4 +1,4 @@
-gate(h, n) = (1:h) + h*(n-1)
+gate(h, n) = (1:h) .+ h*(n-1)
 gate(x::AbstractVector, h, n) = x[gate(h,n)]
 gate(x::AbstractMatrix, h, n) = x[gate(h,n),:]
 
@@ -6,14 +6,10 @@ gate(x::AbstractMatrix, h, n) = x[gate(h,n),:]
 
 """
     Recur(cell)
-
 `Recur` takes a recurrent cell and makes it stateful, managing the hidden state
 in the background. `cell` should be a model of the form:
-
     h, y = cell(h, x...)
-
 For example, here's a recurrent network that keeps a running total of its inputs.
-
 ```julia
 accum(h, x) = (h+x, x)
 rnn = Flux.Recur(accum, 0)
@@ -47,24 +43,18 @@ _truncate(x::Tuple) = _truncate.(x)
 
 """
     truncate!(rnn)
-
 Truncates the gradient of the hidden state in recurrent layers. The value of the
 state is preserved. See also `reset!`.
-
 Assuming you have a `Recur` layer `rnn`, this is roughly equivalent to
-
     rnn.state = Tracker.data(rnn.state)
 """
 truncate!(m) = prefor(x -> x isa Recur && (x.state = _truncate(x.state)), m)
 
 """
     reset!(rnn)
-
 Reset the hidden state of a recurrent layer back to its original value. See also
 `truncate!`.
-
 Assuming you have a `Recur` layer `rnn`, this is roughly equivalent to
-
     rnn.state = hidden(rnn.cell)
 """
 reset!(m) = prefor(x -> x isa Recur && (x.state = x.init), m)
@@ -84,7 +74,7 @@ end
 RNNCell(in::Integer, out::Integer, σ = tanh;
         init = glorot_uniform) =
   RNNCell(σ, param(init(out, in)), param(init(out, out)),
-          param(zeros(out)), param(initn(out)))
+          param(zeros(out)), param(init(out)))
 
 function (m::RNNCell)(h, x)
   σ, Wi, Wh, b = m.σ, m.Wi, m.Wh, m.b
@@ -104,7 +94,6 @@ end
 
 """
     RNN(in::Integer, out::Integer, σ = tanh)
-
 The most basic recurrent layer; essentially acts as a `Dense` layer, but with the
 output fed back into the input each time step.
 """
@@ -122,14 +111,13 @@ end
 
 function LSTMCell(in::Integer, out::Integer;
                   init = glorot_uniform)
-  cell = LSTMCell(param(init(out*4, in)), param(init(out*4, out)), param(zero(out*4)),
-                  param(initn(out)), param(initn(out)))
-  cell.b.data[gate(out, 2)] = 1
+  cell = LSTMCell(param(init(out*4, in)), param(init(out*4, out)), param(zeros(out*4)),
+                  param(init(out)), param(init(out)))
+  cell.b.data[gate(out, 2)] .= 1
   return cell
 end
 
-function (m::LSTMCell)(h_, x)
-  h, c = h_ # TODO: nicer syntax on 0.7
+function (m::LSTMCell)((h, c), x)
   b, o = m.b, size(h, 1)
   g = m.Wi*x .+ m.Wh*h .+ b
   input = σ.(gate(g, o, 1))
@@ -150,10 +138,8 @@ Base.show(io::IO, l::LSTMCell) =
 
 """
     LSTM(in::Integer, out::Integer, σ = tanh)
-
 Long Short Term Memory recurrent layer. Behaves like an RNN but generally
 exhibits a longer memory span over sequences.
-
 See [this article](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 for a good overview of the internals.
 """
@@ -170,7 +156,7 @@ end
 
 GRUCell(in, out; init = glorot_uniform) =
   GRUCell(param(init(out*3, in)), param(init(out*3, out)),
-          param(zero(out*3)), param(initn(out)))
+          param(zeros(out*3)), param(init(out)))
 
 function (m::GRUCell)(h, x)
   b, o = m.b, size(h, 1)
@@ -191,10 +177,8 @@ Base.show(io::IO, l::GRUCell) =
 
 """
     GRU(in::Integer, out::Integer, σ = tanh)
-
 Gated Recurrent Unit layer. Behaves like an RNN but generally
 exhibits a longer memory span over sequences.
-
 See [this article](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 for a good overview of the internals.
 """
