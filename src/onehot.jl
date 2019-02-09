@@ -26,7 +26,7 @@ Base.getindex(xs::OneHotMatrix, ::Colon, i::AbstractArray) = OneHotMatrix(xs.hei
 
 Base.getindex(xs::Flux.OneHotMatrix, j::Base.UnitRange, i::Int) = xs.data[i][j]
 
-Base.getindex(xs::OneHotMatrix, ::Colon, ::Colon) = xs
+Base.getindex(xs::OneHotMatrix, ::Colon...) = xs
 
 # handle special case for when we want the entire column
 function Base.getindex(xs::Flux.OneHotMatrix{T}, ot::Union{Base.Slice, Base.OneTo}, i::Int) where {T<:AbstractArray}
