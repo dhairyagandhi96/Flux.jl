@@ -35,3 +35,11 @@ test:v1.1:
   only:
     - staging
     - trying
+
+test:v1.2:
+  extends: .flux
+  variables:
+    CI_VERSION_TAG: 'v1.2'
+  only:
+    - staging
+    - trying
