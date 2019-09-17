@@ -3,6 +3,7 @@ using Base: @get!
 using MacroTools: @forward
 
 abstract type AbstractOptimiser end
+apply!(opt::AbstractOptimiser, ps, gs, state) = error("no `apply!` definition found for optimiser $opt.")
 
 """
     ADAM(η = 0.001, β = (0.9, 0.999))
