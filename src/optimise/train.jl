@@ -1,22 +1,6 @@
 using Juno
 import Zygote: Params, gradient
 
-function update!(x::AbstractArray, x̄)
-  x .+= x̄
-  return x
-end
-
-function update!(opt, x, x̄)
-  x .-= apply!(opt, x, x̄)
-end
-
-function update!(opt, xs::Params, gs)
-  for x in xs
-    gs[x] == nothing && continue
-    update!(opt, x, gs[x])
-  end
-end
-
 # Callback niceties
 call(f, xs...) = f(xs...)
 runall(f) = f

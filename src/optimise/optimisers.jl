@@ -85,28 +85,28 @@ function apply!(o::RMSProp, x, Δ)
   @. Δ *= η / (√acc + ϵ)
 end
 
-"""
-    ADAM(η = 0.001, β = (0.9, 0.999))
+# """
+#     ADAM(η = 0.001, β = (0.9, 0.999))
+# 
+# [ADAM](https://arxiv.org/abs/1412.6980v8) optimiser.
+# """
+# mutable struct ADAM
+#   eta::Float64
+#   beta::Tuple{Float64,Float64}
+#   state::IdDict
+# end
 
-[ADAM](https://arxiv.org/abs/1412.6980v8) optimiser.
-"""
-mutable struct ADAM
-  eta::Float64
-  beta::Tuple{Float64,Float64}
-  state::IdDict
-end
+# ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, IdDict())
 
-ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, IdDict())
-
-function apply!(o::ADAM, x, Δ)
-  η, β = o.eta, o.beta
-  mt, vt, βp = get!(o.state, x, (zero(x), zero(x), β))
-  @. mt = β[1] * mt + (1 - β[1]) * Δ
-  @. vt = β[2] * vt + (1 - β[2]) * Δ^2
-  @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
-  o.state[x] = (mt, vt, βp .* β)
-  return Δ
-end
+# function apply!(o::ADAM, x, Δ)
+#   η, β = o.eta, o.beta
+#   mt, vt, βp = get!(o.state, x, (zero(x), zero(x), β))
+#   @. mt = β[1] * mt + (1 - β[1]) * Δ
+#   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
+#   @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
+#   o.state[x] = (mt, vt, βp .* β)
+#   return Δ
+# end
 
 """
     RADAM(η = 0.001, β = (0.9, 0.999))
@@ -241,7 +241,7 @@ end
 
 NADAM(η = 0.001, β = (0.9, 0.999)) = NADAM(η, β, IdDict())
 
-function apply!(o::NADAM, x, Δ)
+function apply!(o::NADAM, x, Δ, state = nothing)
   η, β = o.eta, o.beta
   mt, vt, (β1p, β2p) = get!(o.state, x, (zero(x), zero(x), o.beta))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
