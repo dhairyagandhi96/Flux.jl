@@ -9,6 +9,13 @@ expand(N, i::Integer) = ntuple(_ -> i, N)
 Standard convolutional layer. `size` should be a tuple like `(2, 2)`.
 `in` and `out` specify the number of input and output channels respectively.
 
+Takes an optional parameter to switch the `bias` on or off.
+```julia
+  c = Conv((3,3), 3 => 16)
+  x = rand(32, 32, 3, 1) # A 32 x 32 RGB Image
+  c(x, Val(true/false))
+```
+
 Example: Applying Conv layer to a 1-channel input using a 2x2 window size,
          giving us a 16-channel output. Output is activated with ReLU.
 
@@ -47,10 +54,13 @@ Conv(k::NTuple{N,Integer}, ch::Pair{<:Integer,<:Integer}, σ = identity;
 
 @functor Conv
 
-function (c::Conv)(x::AbstractArray)
+_effective_bias(c::Conv, ::Val{true}) = c.σ, reshape(c.bias, map(_->1, c.stride)..., :, 1)
+_effective_bias(c::Conv, ::Val{false}) = c.σ, zero(eltype(c.bias))
+
+function (c::Conv)(x::AbstractArray, use_bias = Val(true))
   # TODO: breaks gpu broadcast :(
   # ndims(x) == ndims(c.weight)-1 && return squeezebatch(c(reshape(x, size(x)..., 1)))
-  σ, b = c.σ, reshape(c.bias, map(_->1, c.stride)..., :, 1)
+  σ, b = _effective_bias(c, use_bias)
   cdims = DenseConvDims(x, c.weight; stride=c.stride, padding=c.pad, dilation=c.dilation)
   σ.(conv(x, c.weight, cdims) .+ b)
 end
