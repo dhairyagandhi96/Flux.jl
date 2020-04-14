@@ -1,7 +1,8 @@
 using Juno
 import Zygote: Params, gradient
 
-
+# TODO: 
+_apply!(opt, x, dx) = apply!(opt.opt, x, dx, opt.state)
 
 """
   update!(x, x̄)
@@ -22,7 +23,7 @@ according to optimizer `opt`  and the gradients `gs` (the gradient `g`).
 As a result, the parameters are mutated and the optimizer's internal state may change.
 """
 function update!(opt, x, x̄)
-  x .-= apply!(opt, x, x̄)
+  x .-= _apply!(opt, x, x̄)
 end
 
 function update!(opt, xs::Params, gs)

@@ -1,13 +1,14 @@
 import Adapt: adapt, adapt_storage
 using Zygote: IdSet
 
-functor(x) = (), _ -> x
+# functor(x) = (), _ -> x
 
 functor(x::Tuple) = x, y -> y
 functor(x::NamedTuple) = x, y -> y
 
 functor(x::AbstractArray) = x, y -> y
 functor(x::AbstractArray{<:Number}) = (), _ -> x
+functor(x::T) where T = (;(f=>getfield(x, f) for f in fieldnames(T))...), y -> T(y...)
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   @eval m begin
@@ -27,14 +28,23 @@ end
 
 isleaf(x) = functor(x)[1] === ()
 
-function fmap1(f, x)
+function fmap1(f, x, dx = (nothing for _ in 1:length(fieldnames(T))))
   func, re = functor(x)
-  re(map(f, func))
+  re(map((x,dx) -> isnothing(dx) ? f(x) : f(x, dx), zip(func,dx)))
 end
 
 function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
+end
+
+@adjoint function Flux.fmap(f, x)
+  op = Flux.fmap(f, x)
+  back(del) = Flux.fmap(del) do x_
+    x_ isa Nothing && return
+    f'(x_)
+  end
+  op, Δ -> (nothing, back(Δ))
 end
 
 trainable(m) = functor(m)[1]

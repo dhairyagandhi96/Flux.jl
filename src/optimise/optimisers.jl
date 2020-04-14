@@ -5,6 +5,14 @@ const ϵ = 1e-8
 
 # TODO: should use weak refs
 
+abstract type AbstractOptimizer end
+
+# TODO: remove this to use the functor state
+struct Optimiser_t{O,S}
+  opt::O
+  state::S
+end
+
 """
     Descent(η = 0.1)
 
@@ -58,17 +66,27 @@ opt = Momentum()
 opt = Momentum(0.01, 0.99)
 ```
 """
-mutable struct Momentum
+struct Momentum <: AbstractOptimizer
   eta::Float64
   rho::Float64
-  velocity::IdDict
+  # velocity::IdDict
 end
 
-Momentum(η = 0.01, ρ = 0.9) = Momentum(η, ρ, IdDict())
+Momentum(η = 0.01, ρ = 0.9, state = IdDict()) = Optimiser_t(Momentum(η, ρ), state)
+# Momentum(η = 0.01, ρ = 0.9) = Momentum(η, ρ, IdDict(), 1)
 
-function apply!(o::Momentum, x, Δ)
+# function apply!(o::Momentum, x, Δ)
+#   η, ρ = o.eta, o.rho
+#   v = get!(o.velocity, x, zero(x))::typeof(x)
+#   @. v = ρ * v - η * Δ
+#   @. Δ = -v
+# end
+
+apply!(o::Optimiser_t, x...) = apply!(opt.opt, opt.state, x...)
+
+function apply!(o::Momentum, x, Δ, state)
   η, ρ = o.eta, o.rho
-  v = get!(o.velocity, x, zero(x))::typeof(x)
+  v = get!(state, x, zero(x))::typeof(x)
   @. v = ρ * v - η * Δ
   @. Δ = -v
 end
