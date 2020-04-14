@@ -29,7 +29,7 @@ end
 function update!(opt, xs::Params, gs)
   for x in xs
     gs[x] == nothing && continue
-    update!(opt, x, gs[x])
+    fmap1((x,dx) -> update!(opt, x, dx), x, gs[x])
   end
 end
 
