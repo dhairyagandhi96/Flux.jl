@@ -69,7 +69,7 @@ function DataLoader(data...; batchsize=1, shuffle=false, partial=true)
     DataLoader(data, batchsize, nx, partial, imax, [1:nx;], shuffle)
 end
 
-getdata(x::AbstractArray, ids) = tuple(x[(Base.Colon() for _=1:ndims(x)-1)..., ids])
+getdata(x::AbstractArray, ids) = x[(Base.Colon() for _=1:ndims(x)-1)..., ids]
 
 @propagate_inbounds function Base.iterate(d::DataLoader, i=0)     # returns data in d.indices[i+1:i+batchsize]
     i >= d.imax && return nothing
