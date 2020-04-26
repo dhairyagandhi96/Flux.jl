@@ -56,9 +56,9 @@ function stop()
   throw(StopException())
 end
 
-batchmemaybe(x::AbstractArray) = tuple(x)
-batchmemaybe(x::AbstractArray{T}) where T <: AbstractArray = x
-batchmemaybe(x) = x
+@inline batchmemaybe(x::AbstractArray) = tuple(x)
+@inline batchmemaybe(x::AbstractArray{T}) where T <: AbstractArray = x
+@inline batchmemaybe(x) = x
 
 """
     train!(loss, params, data, opt; cb)
