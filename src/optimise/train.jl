@@ -56,6 +56,10 @@ function stop()
   throw(StopException())
 end
 
+batchmemaybe(x::AbstractArray) = tuple(x)
+batchmemaybe(x::AbstractArray{T}) where T <: AbstractArray = x
+batchmemaybe(x) = x
+
 """
     train!(loss, params, data, opt; cb)
 
@@ -76,18 +80,11 @@ The callback can call [`Flux.stop`](@ref) to interrupt the training loop.
 Multiple optimisers and callbacks can be passed to `opt` and `cb` as arrays.
 """
 function train!(loss, ps, data, opt; cb = () -> ())
-  ps = Params(ps)
   cb = runall(cb)
   @progress for d in data
     try
-      if d isa AbstractArray{<:Number}
-        gs = gradient(ps) do
-          loss(d)
-        end
-      else
-        gs = gradient(ps) do
-          loss(d...)
-        end
+      gs = gradient(ps) do
+        loss(batchmemaybe(d)...)
       end
       update!(opt, ps, gs)
       cb()
