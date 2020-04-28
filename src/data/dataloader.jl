@@ -52,7 +52,7 @@ Example usage:
    using IterTools: ncycle 
    Flux.train!(loss, ps, ncycle(train_loader, 10), opt)
 """
-function DataLoader(data...; batchsize=1, shuffle=false, partial=true)
+function DataLoader(data::Tuple; batchsize=1, shuffle=false, partial=true)
   length(data) > 0 || throw(ArgumentError("Need at least one data input"))
   batchsize > 0 || throw(ArgumentError("Need positive batchsize"))
   
@@ -79,7 +79,7 @@ getdata(x::AbstractArray, ids) = x[(Base.Colon() for _=1:ndims(x)-1)..., ids]
   nexti = min(i + d.batchsize, d.nobs)
   ids = d.indices[i+1:nexti]
   if length(d.data) == 1
-    batch = getdata(d.data[1], ids)
+    batch = tuple(getdata(d.data[1], ids))
   else
     batch = ((getdata(x, ids) for x in d.data)...,)
   end
