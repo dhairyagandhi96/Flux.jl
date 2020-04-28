@@ -5,15 +5,15 @@
     d = DataLoader((X,), batchsize=2)
     batches = collect(d)
     @test length(batches) == 3
-    @test batches[1] == X[:,1:2]
-    @test batches[2] == X[:,3:4]
-    @test batches[3] == X[:,5:5]
+    @test batches[1] == (X[:,1:2],)
+    @test batches[2] == (X[:,3:4],)
+    @test batches[3] == (X[:,5:5],)
 
     d = DataLoader((X,), batchsize=2, partial=false)
     batches = collect(d)
     @test length(batches) == 2
-    @test batches[1] == X[:,1:2]
-    @test batches[2] == X[:,3:4]
+    @test batches[1] == (X[:,1:2],)
+    @test batches[2] == (X[:,3:4],)
 
     d = DataLoader((X, Y), batchsize=2)
     batches = collect(d)
