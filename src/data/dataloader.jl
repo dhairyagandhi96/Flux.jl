@@ -27,30 +27,30 @@ The original data is preserved as a tuple in the `data` field of the DataLoader.
 
 Example usage:
 
-   Xtrain = rand(10, 100)
-   train_loader = DataLoader((Xtrain,), batchsize=2) 
-   # iterate over 50 mini-batches of size 2
-   for (x,) in train_loader
-     @assert size(x) == (10, 2)
-     ...
-   end
-
-   train_loader.data   # original dataset
-
-   Xtrain = rand(10, 100)
-   Ytrain = rand(100)
-   train_loader = DataLoader((Xtrain, Ytrain), batchsize=2, shuffle=true) 
-   for epoch in 1:100
-     for (x, y) in train_loader
+     Xtrain = rand(10, 100)
+     train_loader = DataLoader((Xtrain,), batchsize=2) 
+     # iterate over 50 mini-batches of size 2
+     for (x,) in train_loader
        @assert size(x) == (10, 2)
-       @assert size(y) == (2,)
        ...
      end
-   end
-
-   # train for 10 epochs
-   using IterTools: ncycle 
-   Flux.train!(loss, ps, ncycle(train_loader, 10), opt)
+  
+     train_loader.data   # original dataset
+  
+     Xtrain = rand(10, 100)
+     Ytrain = rand(100)
+     train_loader = DataLoader((Xtrain, Ytrain), batchsize=2, shuffle=true) 
+     for epoch in 1:100
+       for (x, y) in train_loader
+         @assert size(x) == (10, 2)
+         @assert size(y) == (2,)
+         ...
+       end
+     end
+  
+     # train for 10 epochs
+     using IterTools: ncycle 
+     Flux.train!(loss, ps, ncycle(train_loader, 10), opt)
 """
 function DataLoader(data::Tuple; batchsize=1, shuffle=false, partial=true)
   length(data) > 0 || throw(ArgumentError("Need at least one data input"))
@@ -83,11 +83,7 @@ getdata(x::AbstractArray, ids) = x[(Base.Colon() for _=1:ndims(x)-1)..., ids]
   end
   nexti = min(i + d.batchsize, d.nobs)
   ids = d.indices[i+1:nexti]
-  if length(d.data) == 1
-    batch = tuple(getdata(d.data[1], ids))
-  else
-    batch = ((getdata(x, ids) for x in d.data)...,)
-  end
+  batch = ((getdata(x, ids) for x in d.data)...,)
   return (batch, nexti)
 end
 
