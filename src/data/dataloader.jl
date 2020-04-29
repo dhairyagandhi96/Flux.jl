@@ -12,15 +12,21 @@ end
 
 """
     DataLoader(data...; batchsize=1, shuffle=false, partial=true)
+
 An object that iterates over mini-batches of `data`, each mini-batch containing `batchsize` observations
 (except possibly the last one). 
+
 Takes as input one or more data tensors, e.g. X in unsupervised learning, X and Y in 
 supervised learning. The last dimension in each tensor is considered to be the observation
 dimension. 
+
 If `shuffle=true`, shuffles the observations each time iterations are re-started.
 If `partial=false`, drops the last mini-batch if it is smaller than the batchsize.
+
 The original data is preserved as a tuple in the `data` field of the DataLoader. 
+
 Example usage:
+
     Xtrain = rand(10, 100)
     train_loader = DataLoader(Xtrain, batchsize=2) 
     # iterate over 50 mini-batches of size 2
@@ -28,7 +34,9 @@ Example usage:
         @assert size(x) == (10, 2)
         ...
     end
+
     train_loader.data   # original dataset
+
     Xtrain = rand(10, 100)
     Ytrain = rand(100)
     train_loader = DataLoader(Xtrain, Ytrain, batchsize=2, shuffle=true) 
@@ -39,6 +47,7 @@ Example usage:
             ...
         end
     end
+
     # train for 10 epochs
     using IterTools: ncycle 
     Flux.train!(loss, ps, ncycle(train_loader, 10), opt)
