@@ -1,8 +1,6 @@
 using Juno
 import Zygote: Params, gradient
 
-
-
 """
     update!(x, x̄)
 
@@ -56,10 +54,6 @@ function stop()
   throw(StopException())
 end
 
-@inline batchmemaybe(x::AbstractArray) = tuple(x)
-@inline batchmemaybe(x::AbstractArray{T}) where T <: AbstractArray = x
-@inline batchmemaybe(x) = x
-
 """
     train!(loss, params, data, opt; cb)
 
@@ -85,7 +79,7 @@ function train!(loss, ps, data, opt; cb = () -> ())
   @progress for d in data
     try
       gs = gradient(ps) do
-        loss(batchmemaybe(d)...)
+        loss(d...)
       end
       update!(opt, ps, gs)
       cb()

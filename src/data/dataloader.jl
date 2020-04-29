@@ -69,9 +69,8 @@ function DataLoader(data::Tuple; batchsize=1, shuffle=false, partial=true)
   DataLoader(data, batchsize, nx, partial, imax, [1:nx;], shuffle)
 end
 
-function DataLoader(data...; kwargs...)
-  @warn "Please wrap the data in a Tuple like (x,)"
-  DataLoader(data; kwargs...)
+function DataLoader(data; kwargs...)
+  DataLoader(tuple(data); kwargs...)
 end
 
 getdata(x::AbstractArray, ids) = x[(Base.Colon() for _=1:ndims(x)-1)..., ids]
