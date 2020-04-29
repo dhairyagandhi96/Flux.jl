@@ -2,20 +2,20 @@
     X = reshape([1:10;], (2, 5))
     Y = [1:5;]
 
-    d = DataLoader((X,), batchsize=2)
+    d = DataLoader(X, batchsize=2)
     batches = collect(d)
     @test length(batches) == 3
-    @test batches[1] == (X[:,1:2],)
-    @test batches[2] == (X[:,3:4],)
-    @test batches[3] == (X[:,5:5],)
+    @test batches[1] == X[:,1:2]
+    @test batches[2] == X[:,3:4]
+    @test batches[3] == X[:,5:5]
 
-    d = DataLoader((X,), batchsize=2, partial=false)
+    d = DataLoader(X, batchsize=2, partial=false)
     batches = collect(d)
     @test length(batches) == 2
-    @test batches[1] == (X[:,1:2],)
-    @test batches[2] == (X[:,3:4],)
+    @test batches[1] == X[:,1:2]
+    @test batches[2] == X[:,3:4]
 
-    d = DataLoader((X, Y), batchsize=2)
+    d = DataLoader(X, Y, batchsize=2)
     batches = collect(d)
     @test length(batches) == 3
     @test length(batches[1]) == 2
@@ -32,7 +32,7 @@
     θ = ones(2)
     X = zeros(2, 10)
     loss(x) = sum((x .- θ).^2)
-    d  = DataLoader((X,)) 
+    d  = DataLoader(X) 
     Flux.train!(loss, [θ], ncycle(d, 10), Descent(0.1))
     @test norm(θ) < 1e-4
 
@@ -41,7 +41,7 @@
     X = ones(2, 10)
     Y = fill(2, 10)
     loss(x, y) = sum((y - x'*θ).^2)
-    d  = DataLoader((X, Y)) 
+    d  = DataLoader(X, Y) 
     Flux.train!(loss, [θ], ncycle(d, 10), Descent(0.1))
     @test norm(θ .- 1) < 1e-10
 end
