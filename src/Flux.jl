@@ -25,7 +25,7 @@ export Descent, ADAM, Momentum, Nesterov, RMSProp,
   ClipValue, ClipNorm
 
 
-using CuArrays
+# using CuArrays
 const use_cuda = Ref(false)
 
 include("utils.jl")
@@ -43,15 +43,15 @@ include("data/Data.jl")
 
 include("deprecations.jl")
 
-include("cuda/cuda.jl")
+# include("cuda/cuda.jl")
 
-function __init__()
-  use_cuda[] = CuArrays.functional() # Can be overridden after load with `Flux.use_cuda[] = false`
-  if CuArrays.functional()
-    if !CuArrays.has_cudnn()
-      @warn "CuArrays.jl found cuda, but did not find libcudnn. Some functionality will not be available."
-    end
-  end
-end
+# function __init__()
+#   use_cuda[] = CuArrays.functional() # Can be overridden after load with `Flux.use_cuda[] = false`
+#   if CuArrays.functional()
+#     if !CuArrays.has_cudnn()
+#       @warn "CuArrays.jl found cuda, but did not find libcudnn. Some functionality will not be available."
+#     end
+#   end
+# end
 
 end # module
