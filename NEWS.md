@@ -7,6 +7,7 @@
 * Add [Adaptive Pooling](https://github.com/FluxML/Flux.jl/pull/1239) in Flux layers.
 * Change to `DataLoader`'s [constructor](https://github.com/FluxML/Flux.jl/pull/1152)
 * Uniform loss [interface](https://github.com/FluxML/Flux.jl/pull/1150)
+* Loss functions now live in the `Flux.Losses` [module](https://github.com/FluxML/Flux.jl/pull/1264)
 * Optimistic ADAM (OADAM) optimizer for [adversarial training](https://github.com/FluxML/Flux.jl/pull/1246).
 * Add option for [same padding](https://github.com/FluxML/Flux.jl/pull/901) to conv and pooling layers by setting `pad=SamePad()`.
 * Added option to set `bias` to [Flux.Zeros](https://github.com/FluxML/Flux.jl/pull/873) to eliminating `bias` from being trained.
@@ -17,6 +18,8 @@
 * Testing suite improvements now test for gradients of all layers along with GPU support.
 * Functors have now moved to [Functors.jl](https://github.com/FluxML/Flux.jl/pull/1174) to allow for their use outside of Flux.
 * Added [helper functions](https://github.com/FluxML/Flux.jl/pull/873) `Flux.convfilter` and `Flux.depthwiseconvfilter` to construct weight arrays for convolutions outside of layer constructors so as to not have to depend on the default layers for custom implementations.
+* `dropout` function now has a mandatory [active](https://github.com/FluxML/Flux.jl/pull/1263)
+keyword argument. The `Dropout` struct *whose behavior is left unchanged) is the recommended choice for common usage.
 * and many more fixes and additions...
 
 # v0.10.1 - v0.10.4
@@ -30,7 +33,7 @@ See GitHub's releases.
   - This means Flux now does not depend on using a specialised `TrackedArray` type, and can be used with normal Array implementations directly.
   - Tracker compatibility is maintained in most common cases, but Zygote will be the preferred AD backend for Flux from now on.
 * The CUDNN wrappers have been [moved from Flux into CuArrays](https://github.com/FluxML/Flux.jl/pull/874), to allow for better supporting the CUDA backend, and improve user experience, not to mention making Flux lean.
-* `*crossentropy` functions now [work as expected with CuArrays](https://github.com/FluxML/Flux.jl/pull/926). [PR for bce_loss](https://github.com/FluxML/Flux.jl/pull/940).
+* `*crossentropy` functions now [work as expected with CuArrays](https://github.com/FluxML/Flux.jl/pull/926). [PR for binarycrossentropy](https://github.com/FluxML/Flux.jl/pull/940).
 * Added [clearer docs](https://github.com/FluxML/Flux.jl/pull/904) around training and the Optimiser interface.
 * [Layer initialisations](https://github.com/FluxML/Flux.jl/pull/937) have been improved with a clearer API on how to extend it for other purposes.
 * [Better messaging around CUDA availability](https://github.com/FluxML/Flux.jl/pull/924), with hooks to initialize the GPU as default where possible.
