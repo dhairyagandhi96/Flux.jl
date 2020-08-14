@@ -1,3 +1,9 @@
+using LoopVectorization
+using LoopVectorization: vifelse, vmap
+
+using Base.Threads
+using LinearAlgebra
+
 struct TDense{F,T,S}
     σ::F
     W::T
