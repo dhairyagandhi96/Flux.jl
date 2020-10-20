@@ -189,22 +189,20 @@ BatchNorm(chs::Integer, λ = identity;
 
 trainable(bn::BatchNorm) = (bn.β, bn.γ)
 
-function (BN::BatchNorm)(x)
-  size(x, ndims(x)-1) == length(BN.β) ||
-    error("BatchNorm expected $(length(BN.β)) channels, got $(size(x, ndims(x)-1))")
-  dims = length(size(x))
-  channels = size(x, dims-1)
-  affine_shape = ntuple(i->i == ndims(x) - 1 ? size(x, i) : 1, ndims(x))
+function _update_stats!(BN::BatchNorm, x::AbstractArray{T,N}) where {T,N}
+  channels = size(x, N-1)
+  affine_shape = ntuple(i->i == N - 1 ? size(x, i) : 1, Val(N))
   m = div(prod(size(x)), channels)
   γ = reshape(BN.γ, affine_shape...)
   β = reshape(BN.β, affine_shape...)
+  # @show !_isactive(BN)
   if !_isactive(BN)
     μ = reshape(BN.μ, affine_shape...)
     σ² = reshape(BN.σ², affine_shape...)
     ϵ = BN.ϵ
   else
-    T = eltype(x)
-    axes = [1:dims-2; dims] # axes to reduce along (all but channels axis)
+    # @show "om here"
+    axes = [1:N-2; N] # axes to reduce along (all but channels axis)
     μ = mean(x, dims = axes)
     σ² = sum((x .- μ) .^ 2, dims = axes) ./ m
     ϵ = convert(T, BN.ϵ)
@@ -214,11 +212,48 @@ function (BN::BatchNorm)(x)
     BN.μ  = (1 - mtm) .* BN.μ .+ mtm .* S.(reshape(μ, :))
     BN.σ² = (1 - mtm) .* BN.σ² .+ (mtm * m / (m - 1)) .* S.(reshape(σ², :))
   end
+  μ, σ², γ, β, ϵ
+end
 
-  let λ = BN.λ
+@inline function batchnorm(x, λ, β, γ, μ, σ², ϵ)
+  # let λ = λ
     x̂ = (x .- μ) ./ sqrt.(σ² .+ ϵ)
     λ.(γ .* x̂ .+ β)
-  end
+  # end
+end
+
+function (BN::BatchNorm)(x)
+  size(x, ndims(x)-1) == length(BN.β) ||
+    error("BatchNorm expected $(length(BN.β)) channels, got $(size(x, ndims(x)-1))")
+  # dims = length(size(x))
+  # channels = size(x, dims-1)
+  # affine_shape = ntuple(i->i == ndims(x) - 1 ? size(x, i) : 1, ndims(x))
+  # m = div(prod(size(x)), channels)
+  # γ = reshape(BN.γ, affine_shape...)
+  # β = reshape(BN.β, affine_shape...)
+  # if !_isactive(BN)
+  #   μ = reshape(BN.μ, affine_shape...)
+  #   σ² = reshape(BN.σ², affine_shape...)
+  #   ϵ = BN.ϵ
+  # else
+  #   T = eltype(x)
+  #   axes = [1:dims-2; dims] # axes to reduce along (all but channels axis)
+  #   μ = mean(x, dims = axes)
+  #   σ² = sum((x .- μ) .^ 2, dims = axes) ./ m
+  #   ϵ = convert(T, BN.ϵ)
+  #   # update moving mean/std
+  #   mtm = BN.momentum
+  #   S = eltype(BN.μ)
+  #   BN.μ  = (1 - mtm) .* BN.μ .+ mtm .* S.(reshape(μ, :))
+  #   BN.σ² = (1 - mtm) .* BN.σ² .+ (mtm * m / (m - 1)) .* S.(reshape(σ², :))
+  # end
+
+  μ, σ², γ, β, ϵ = _update_stats!(BN, x)
+  # let λ = BN.λ
+  #   x̂ = (x .- μ) ./ sqrt.(σ² .+ ϵ)
+  #   λ.(γ .* x̂ .+ β)
+  # end
+  batchnorm(x, BN.λ, β, γ, μ, σ², ϵ)
 end
 
 @functor BatchNorm
