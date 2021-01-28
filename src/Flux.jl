@@ -8,6 +8,8 @@ using Zygote, MacroTools, Juno, Reexport
 using MacroTools: @forward
 @reexport using NNlib
 using Zygote: Params, @adjoint, gradient, pullback, @nograd
+using Requires: @requires
+
 
 export gradient
 
@@ -53,6 +55,8 @@ using .Losses # TODO: stop importing Losses in Flux's namespace in v0.12
 include("deprecations.jl")
 
 include("cuda/cuda.jl")
+
+@requires Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c" include("tracker.jl")
 
 function __init__()
   use_cuda[] = CUDA.functional() # Can be overridden after load with `Flux.use_cuda[] = false`
