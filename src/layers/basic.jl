@@ -109,29 +109,34 @@ julia> Flux.params(d1)  # no trainable bias
 Params([[1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0]])
 ```
 """
-struct Dense{F, M<:AbstractMatrix, B}
-  weight::M
-  bias::B
+struct Dense{F,M,B}
   σ::F
+  W::M
+  b::B
   function Dense(W::M, bias = true, σ::F = identity) where {M<:AbstractMatrix, F}
     b = create_bias(W, bias, size(W,1))
     new{F,M,typeof(b)}(W, b, σ)
   end
 end
 
+# function Dense(W::M, bias = true, σ = identity) where {M,F}
+#   b = create_bias(W, bias, size(W,1))
+#   Dense(σ, W, b)
+# end
+
 function Dense(in::Integer, out::Integer, σ = identity;
                initW = nothing, initb = nothing,
                init = glorot_uniform, bias=true)
 
   W = if initW !== nothing
-    Base.depwarn("keyword initW is deprecated, please use init (which similarly accepts a funtion like randn)", :Dense)
+    # Base.depwarn("keyword initW is deprecated, please use init (which similarly accepts a funtion like randn)", :Dense)
     initW(out, in)
   else
     init(out, in)
   end
 
   b = if bias === true && initb !== nothing
-    Base.depwarn("keyword initb is deprecated, please simply supply the bias vector, bias=initb(out)", :Dense)
+    # Base.depwarn("keyword initb is deprecated, please simply supply the bias vector, bias=initb(out)", :Dense)
     initb(out)
   else
     bias
@@ -142,12 +147,13 @@ end
 
 @functor Dense
 
-function (a::Dense)(x::AbstractArray)
-  W, b, σ = a.weight, a.bias, a.σ
-  sz = size(x)
-  y = reshape(x, sz[1], :)  # reshape to handle dims > 1 as batch dimensions
-  z = σ.(W*y .+ b)
-  return reshape(z, :, sz[2:end]...)
+function (a::Dense)(x)
+  a.σ.(a.W * x .+ a.b)
+  # W, b, σ = a.weight, a.bias, a.σ
+  # sz = size(x)
+  # y = reshape(x, sz[1], :)  # reshape to handle dims > 1 as batch dimensions
+  # z = σ.(W*y .+ b)
+  # return reshape(z, :, sz[2:end]...)
 end
 
 function Base.show(io::IO, l::Dense)
